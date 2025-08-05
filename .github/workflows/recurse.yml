@@ -77,14 +77,14 @@ jobs:
           ARTIFACT_NAME_FROM_PRIMARY: ${{ github.event.inputs.chunk_package_artifact_name }}
         shell: bash
         run: |
-          set -e
+          
           echo "WORKER: Downloading artifact '$ARTIFACT_NAME_FROM_PRIMARY' from $PRIMARY_REPO_OWNER/$PRIMARY_REPO_NAME"
           if ! command -v gh &> /dev/null; then
             apt-get update -qy && apt-get install -qy curl && \
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \
             chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
-            apt-get update -qy && apt-get install -qy gh || { echo "ERROR: gh CLI installation failed."; exit 1; }
+            apt-get update -qy && apt-get install -qy gh || { echo "ERROR: gh CLI installation failed."; }
           fi
           echo "$GH_TOKEN_PRIMARY_ACCOUNT_READ" | gh auth login --with-token
           gh run download "$PRIMARY_RUN_ID" -R "$PRIMARY_REPO_OWNER/$PRIMARY_REPO_NAME" -n "$ARTIFACT_NAME_FROM_PRIMARY" --dir .
@@ -94,19 +94,18 @@ jobs:
             tar -xzvf "$PACKAGE_FILENAME"
           else
             echo "::error:: Failed to download or find artifact tarball '$PACKAGE_FILENAME'"
-            exit 1
+            exit 0
           fi
 
       - name: Run Findomain with GNU Parallel on Chunk
         id: run_parallel
         shell: bash
         run: |
-          set -euo pipefail
           CHUNK_FILE_PATH=${{ matrix.pair.chunk }}
           echo "Processing chunk '$CHUNK_FILE_PATH'..."
           if [ ! -f "$CHUNK_FILE_PATH" ]; then
             echo "ERROR: Chunk file '$CHUNK_FILE_PATH' not found!"
-            exit 1
+            exit 0
           fi
           SUB_CHUNK_DIR="sub-chunks"
           RAW_RESULTS_FILE="raw_subdomain_results.txt"
@@ -153,7 +152,7 @@ jobs:
         id: map_subdomains_cdn
         shell: bash
         run: |
-          set -euo pipefail
+          
           trap '' SIGPIPE
           
           MASSDNS_FILE="massdns_file.txt"
@@ -249,7 +248,7 @@ jobs:
         id: consolidate
         shell: bash
         run: |
-          set -e
+          
           mkdir -p final_results
           if [ ! -d "temp-aggregated-results" ] || [ -z "$(ls -A temp-aggregated-results)" ]; then
             echo "::warning:: No result artifacts were found from the tertiary worker. Nothing to merge."
@@ -309,7 +308,7 @@ jobs:
           STORE: ${{ secrets.STORE }}
           CORRELATION_ID: ${{ github.event.inputs.primary_run_id }}
         run: |
-          set -e
+          
           RESULTS_DIR="${GITHUB_WORKSPACE}/final_results"
           if [ ! -d "$RESULTS_DIR" ] || [ -z "$(ls -A "$RESULTS_DIR")" ]; then
             echo "::warning:: Results directory is empty or does not exist. Nothing to commit."
@@ -370,3 +369,4 @@ jobs:
           git commit -m "feat(worker-tertiary): Add new assets from Correlation ID: ${CORRELATION_ID}"
           git push -v origin main
           echo "✅ Successfully pushed new tertiary results to ${STORE}."
+          exit 1
