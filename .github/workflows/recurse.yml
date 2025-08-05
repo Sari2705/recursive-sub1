@@ -170,8 +170,9 @@ jobs:
           cut -d' ' -f1 "$TMP_IP2SUB" | sort -u > "$TMP_IP_ONLY"
           cat "$TMP_IP_ONLY" | cut-cdn -ua -t 50 -silent -o "$TMP_NONCDN"
           cat "$TMP_IP_ONLY" | anew -d "$TMP_NONCDN" > "$TMP_CDN"
-          rustscan -a "$TMP_NONCDN" -p 80,443 --no-banner -t 1000 --tries 1 -u 20000 --scan-order "Random" -b 100 --greppable --accessible > "$TMP_RUSTSCAN"
-          cat "$TMP_RUSTSCAN" | awk -F ' -> ' '{ gsub(/[\[\]]/, "", $2); n = split($2, p, ","); for(i=1;i<=n;i++) print $1 ":" p[i] }' | anew -q "$TMP_SMAP_NONCDN"
+          smap -iL "$TMP_NONCDN" -oP "$TMP_SMAP_NONCDN" || true
+          rustscan -a "$TMP_NONCDN" -p 80,443 --no-banner -t 1000 --tries 1 -u 20000 --scan-order "Random" -b 100 --greppable --accessible > "$TMP_RUSTSCAN" || true
+          cat "$TMP_RUSTSCAN" | awk -F ' -> ' '{ gsub(/[\[\]]/, "", $2); n = split($2, p, ","); for(i=1;i<=n;i++) print $1 ":" p[i] }' | anew -q "$TMP_SMAP_NONCDN" || true
           cat "$TMP_SMAP_NONCDN" "$TMP_CDN" | sort -u > "$SMAP_FILE"
           awk -F: '
             NF==2 { print $1, $2 }
