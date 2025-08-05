@@ -369,4 +369,4 @@ jobs:
           git commit -m "feat(worker-tertiary): Add new assets from Correlation ID: ${CORRELATION_ID}"
           git push -v origin main
           echo "✅ Successfully pushed new tertiary results to ${STORE}."
-          exit 1
+          
