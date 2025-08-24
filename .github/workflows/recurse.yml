@@ -309,7 +309,7 @@ jobs:
           STORE: ${{ secrets.STORE }}
           CORRELATION_ID: ${{ github.event.inputs.primary_run_id }}
         run: |
-          set -e
+
           
           RESULTS_DIR="${GITHUB_WORKSPACE}/final_results"
           if [ ! -d "$RESULTS_DIR" ] || [ -z "$(ls -A "$RESULTS_DIR")" ]; then
@@ -377,16 +377,18 @@ jobs:
             echo "No new unique data to commit from tertiary worker."
             exit 0
           fi
+
+          # --- FIX: Commit the staged changes ONCE, before the loop starts ---
+          git commit -m "feat: Add new assets from Recursive recon scan from Correlation ID: ${CORRELATION_ID}"
           
           # --- RETRY LOOP FOR COMMIT AND PUSH ---
           MAX_ATTEMPTS=5
           for (( i=1; i<=MAX_ATTEMPTS; i++ )); do
             echo "[Attempt $i/$MAX_ATTEMPTS] Committing and pushing changes from tertiary worker..."
-            # Pull the latest remote changes on every attempt.
+            # Pull the latest remote changes on every attempt. This will now work.
             git pull --rebase origin main
 
-            # Commit the staged changes. || true prevents failure if already committed.
-            git commit -m "feat: Add new assets from Recursive recon scan from Correlation ID: ${CORRELATION_ID}" || true
+            # The commit command is no longer inside the loop.
             
             # Attempt to push.
             if git push -v origin main; then
