@@ -41,6 +41,14 @@ jobs:
       matrix:
         pair: ${{ fromJson(github.event.inputs.tertiary_matrix_json && github.event.inputs.tertiary_matrix_json || '[]') }}
     steps:
+      - name: Display Trigger Payload (Debug)
+        run: |
+          echo "TERTIARY WORKER: Received payload:"
+          echo "${{ toJson(github.event.inputs) }}"
+          echo "---"
+          echo "TERTIARY WORKER: My assigned chunk for this job instance:"
+          echo "${{ toJson(matrix.pair) }}"
+          
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
