@@ -49,7 +49,7 @@ jobs:
       - name: Add Startup Delay to Allow for Runner Allocation
         run: |
           echo "This runner will wait for 60 seconds to allow other jobs in the matrix to be allocated."
-          sleep 30
+          sleep 60
           echo "Delay finished. Beginning artifact download."
           
       - name: Setup Go
