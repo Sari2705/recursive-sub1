@@ -434,6 +434,8 @@ jobs:
               else
                 echo "  -> No massdns source found or file empty: $source_massdns_file"
               fi     
+
+            done
             
             # Stage all changes
             git add results/
