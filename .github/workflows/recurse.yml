@@ -173,7 +173,6 @@ jobs:
       - name: Sort Resolved Results into Root Domain Folders
         shell: bash
         run: |
-                set -eu -o pipefail
 
                 RESOLVED_FILE="puredns_resolved.txt"
                 MASSDNS_FILE="massdns_file.txt"
